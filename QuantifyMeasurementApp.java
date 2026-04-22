@@ -1,5 +1,5 @@
 /**
- * UC5: Unit-to-Unit Conversion
+ * UC6: Addition of Length Units
  */
 
 public class QuantifyMeasurementApp {
@@ -33,7 +33,7 @@ public class QuantifyMeasurementApp {
 
         public Quantity(double value, LengthUnit unit) {
             if (!Double.isFinite(value)) {
-                throw new IllegalArgumentException("Invalid numeric value");
+                throw new IllegalArgumentException("Invalid value");
             }
             if (unit == null) {
                 throw new IllegalArgumentException("Unit cannot be null");
@@ -46,65 +46,61 @@ public class QuantifyMeasurementApp {
             return unit.toFeet(value);
         }
 
-        // 🔹 Convert to another unit (instance method)
-        public Quantity convertTo(LengthUnit targetUnit) {
-            double feet = this.toFeet();
-            double converted = targetUnit.fromFeet(feet);
-            return new Quantity(converted, targetUnit);
-        }
+        // 🔹 ADD METHOD (CORE OF UC6)
+        public Quantity add(Quantity other) {
 
-        // 🔹 Static conversion API
-        public static double convert(double value, LengthUnit source, LengthUnit target) {
-
-            if (!Double.isFinite(value)) {
-                throw new IllegalArgumentException("Invalid value");
-            }
-            if (source == null || target == null) {
-                throw new IllegalArgumentException("Unit cannot be null");
+            if (other == null) {
+                throw new IllegalArgumentException("Second operand cannot be null");
             }
 
-            double feet = source.toFeet(value);
-            return target.fromFeet(feet);
-        }
+            // Convert both to base unit
+            double sumFeet = this.toFeet() + other.toFeet();
 
-        // 🔹 Equals (same as UC4)
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
+            // Convert back to unit of first operand
+            double result = this.unit.fromFeet(sumFeet);
 
-            Quantity other = (Quantity) obj;
-            return Double.compare(this.toFeet(), other.toFeet()) == 0;
+            return new Quantity(result, this.unit);
         }
 
         @Override
         public String toString() {
-            return value + " " + unit;
+            return "Quantity(" + value + ", " + unit + ")";
         }
     }
 
-    // 🔹 Demo Methods (API usage)
-    static void demonstrateLengthConversion(double value, LengthUnit from, LengthUnit to) {
-        double result = Quantity.convert(value, from, to);
-        System.out.println("convert(" + value + ", " + from + ", " + to + ") = " + result);
-    }
-
-    static void demonstrateLengthConversion(Quantity q, LengthUnit to) {
-        Quantity result = q.convertTo(to);
-        System.out.println(q + " -> " + result);
-    }
-
-    // 🔹 MAIN
+    // 🔹 MAIN (TEST CASES)
     public static void main(String[] args) {
 
-        demonstrateLengthConversion(1.0, LengthUnit.FEET, LengthUnit.INCH);
-        demonstrateLengthConversion(3.0, LengthUnit.YARDS, LengthUnit.FEET);
-        demonstrateLengthConversion(36.0, LengthUnit.INCH, LengthUnit.YARDS);
-        demonstrateLengthConversion(1.0, LengthUnit.CENTIMETER, LengthUnit.INCH);
-        demonstrateLengthConversion(0.0, LengthUnit.FEET, LengthUnit.INCH);
+        // Same unit
+        System.out.println(new Quantity(1.0, LengthUnit.FEET)
+                .add(new Quantity(2.0, LengthUnit.FEET)));
 
-        // Instance method demo
-        Quantity q = new Quantity(2.0, LengthUnit.YARDS);
-        demonstrateLengthConversion(q, LengthUnit.INCH);
+        // Feet + Inches
+        System.out.println(new Quantity(1.0, LengthUnit.FEET)
+                .add(new Quantity(12.0, LengthUnit.INCH)));
+
+        // Inches + Feet
+        System.out.println(new Quantity(12.0, LengthUnit.INCH)
+                .add(new Quantity(1.0, LengthUnit.FEET)));
+
+        // Yard + Feet
+        System.out.println(new Quantity(1.0, LengthUnit.YARDS)
+                .add(new Quantity(3.0, LengthUnit.FEET)));
+
+        // Inches + Yard
+        System.out.println(new Quantity(36.0, LengthUnit.INCH)
+                .add(new Quantity(1.0, LengthUnit.YARDS)));
+
+        // CM + Inches
+        System.out.println(new Quantity(2.54, LengthUnit.CENTIMETER)
+                .add(new Quantity(1.0, LengthUnit.INCH)));
+
+        // Zero case
+        System.out.println(new Quantity(5.0, LengthUnit.FEET)
+                .add(new Quantity(0.0, LengthUnit.INCH)));
+
+        // Negative case
+        System.out.println(new Quantity(5.0, LengthUnit.FEET)
+                .add(new Quantity(-2.0, LengthUnit.FEET)));
     }
 }

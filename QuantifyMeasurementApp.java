@@ -1,5 +1,5 @@
 /**
- * UC6: Addition of Length Units
+ * UC7: Addition with Target Unit Specification
  */
 
 public class QuantifyMeasurementApp {
@@ -46,20 +46,28 @@ public class QuantifyMeasurementApp {
             return unit.toFeet(value);
         }
 
-        // 🔹 ADD METHOD (CORE OF UC6)
+        // 🔹 UC6 METHOD (kept for backward compatibility)
         public Quantity add(Quantity other) {
+            return add(other, this.unit);
+        }
+
+        // 🔹 UC7 METHOD (CORE)
+        public Quantity add(Quantity other, LengthUnit targetUnit) {
 
             if (other == null) {
                 throw new IllegalArgumentException("Second operand cannot be null");
+            }
+            if (targetUnit == null) {
+                throw new IllegalArgumentException("Target unit cannot be null");
             }
 
             // Convert both to base unit
             double sumFeet = this.toFeet() + other.toFeet();
 
-            // Convert back to unit of first operand
-            double result = this.unit.fromFeet(sumFeet);
+            // Convert to target unit
+            double result = targetUnit.fromFeet(sumFeet);
 
-            return new Quantity(result, this.unit);
+            return new Quantity(result, targetUnit);
         }
 
         @Override
@@ -71,36 +79,36 @@ public class QuantifyMeasurementApp {
     // 🔹 MAIN (TEST CASES)
     public static void main(String[] args) {
 
-        // Same unit
+        // Feet target
         System.out.println(new Quantity(1.0, LengthUnit.FEET)
-                .add(new Quantity(2.0, LengthUnit.FEET)));
+                .add(new Quantity(12.0, LengthUnit.INCH), LengthUnit.FEET));
 
-        // Feet + Inches
+        // Inches target
         System.out.println(new Quantity(1.0, LengthUnit.FEET)
-                .add(new Quantity(12.0, LengthUnit.INCH)));
+                .add(new Quantity(12.0, LengthUnit.INCH), LengthUnit.INCH));
 
-        // Inches + Feet
-        System.out.println(new Quantity(12.0, LengthUnit.INCH)
-                .add(new Quantity(1.0, LengthUnit.FEET)));
+        // Yards target
+        System.out.println(new Quantity(1.0, LengthUnit.FEET)
+                .add(new Quantity(12.0, LengthUnit.INCH), LengthUnit.YARDS));
 
-        // Yard + Feet
+        // Yard + Feet → Yard
         System.out.println(new Quantity(1.0, LengthUnit.YARDS)
-                .add(new Quantity(3.0, LengthUnit.FEET)));
+                .add(new Quantity(3.0, LengthUnit.FEET), LengthUnit.YARDS));
 
-        // Inches + Yard
+        // Inches + Yard → Feet
         System.out.println(new Quantity(36.0, LengthUnit.INCH)
-                .add(new Quantity(1.0, LengthUnit.YARDS)));
+                .add(new Quantity(1.0, LengthUnit.YARDS), LengthUnit.FEET));
 
-        // CM + Inches
+        // CM + Inches → CM
         System.out.println(new Quantity(2.54, LengthUnit.CENTIMETER)
-                .add(new Quantity(1.0, LengthUnit.INCH)));
+                .add(new Quantity(1.0, LengthUnit.INCH), LengthUnit.CENTIMETER));
 
         // Zero case
         System.out.println(new Quantity(5.0, LengthUnit.FEET)
-                .add(new Quantity(0.0, LengthUnit.INCH)));
+                .add(new Quantity(0.0, LengthUnit.INCH), LengthUnit.YARDS));
 
         // Negative case
         System.out.println(new Quantity(5.0, LengthUnit.FEET)
-                .add(new Quantity(-2.0, LengthUnit.FEET)));
+                .add(new Quantity(-2.0, LengthUnit.FEET), LengthUnit.INCH));
     }
 }
